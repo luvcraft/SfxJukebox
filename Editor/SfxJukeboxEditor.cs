@@ -14,16 +14,18 @@ namespace SFXJukebox
         {
             base.OnInspectorGUI();
             if(!Application.isPlaying)
-            {
-                if(GUILayout.Button("Alphabetize"))
-                {
-                    Alphabetize();
-                }
+            {             
                 AudioClip a = EditorGUILayout.ObjectField("Add", null, typeof(AudioClip), false) as AudioClip;
                 if(a)
                 {
                     AddSet(a);
                 }
+
+                if(GUILayout.Button("Alphabetize"))
+                {
+                    Alphabetize();
+                }
+
                 if(GUILayout.Button("Count SFX"))
                 {
                     CountSfx();
