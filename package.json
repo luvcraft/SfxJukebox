@@ -1,0 +1,9 @@
+{
+  "name": "com.studiohunty.sfxjukebox",
+  "displayName": "Sfx Jukebox",
+  "version": "1.0.0",
+  "description": "A simple sfx and music management system.",
+  "type": "library",
+  "dependencies": {
+  }
+}
