@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-namespace SfxJukebox
+namespace SFXJukebox
 {
 	/// <summary>
 	/// behavior for playing random sfx from sets on specified targets
@@ -195,6 +195,24 @@ namespace SfxJukebox
 				_lastTime = Time.timeSinceLevelLoad;
 				Play(set, target);
 			}
+		}
+
+		/// <summary>
+		/// get the sfx set with the specified name
+		/// </summary>
+		/// <param name="name">name of set to search for</param>
+		/// <returns>sfx set if it exists in this jukebox, null otherwise</returns>
+		public SfxSet SfxSetNamed(string name)
+		{
+			foreach(SfxSet set in sfxSet)
+			{
+				if(set.name == name)
+				{
+					return set;
+				}
+			}
+
+			return null;
 		}
 
 		/// <summary>

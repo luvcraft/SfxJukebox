@@ -1,6 +1,6 @@
 ﻿using UnityEngine;
 
-namespace SfxJukebox
+namespace SFXJukebox
 {
 	/// <summary>
 	/// data class for holding sets of sfx to be played by sfx jukebox

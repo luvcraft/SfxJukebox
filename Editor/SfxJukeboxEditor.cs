@@ -1,7 +1,8 @@
 ﻿using UnityEngine;
 using UnityEditor;
+using System.Collections.Generic;
 
-namespace SfxJukebox
+namespace SFXJukebox
 {
     /// <summary>
     /// editor for SfxJukebox
@@ -30,33 +31,48 @@ namespace SfxJukebox
             }
         }
 
+        /// <summary>
+        /// alphabetize the sfx sets
+        /// </summary>
         void Alphabetize()
         {
-            SfxJukebox soundmaster = target as SfxJukebox;
-            soundmaster.sfxSet.Sort();
+            SfxJukebox jukebox = target as SfxJukebox;
+            jukebox.sfxSet.Sort();
         }
 
+        /// <summary>
+        /// count the sfx in the sfx sets
+        /// </summary>
         void CountSfx()
         {
-            SfxJukebox soundmaster = target as SfxJukebox;
+            SfxJukebox jukebox = target as SfxJukebox;
             int n = 0;
-            foreach(SfxSet set in soundmaster.sfxSet)
+            HashSet<AudioClip> clips = new HashSet<AudioClip>();
+
+            foreach(SfxSet set in jukebox.sfxSet)
             {
                 for(int i = 0; i < set.sfx.Length; i++)
                 {
                     if(set.sfx[i])
+					{
+                        clips.Add(set.sfx[i]);
                         n++;
-                }
+					}
+				}
             }
-            Debug.Log("sfx count: " + n.ToString() + " sfx in " + soundmaster.sfxSet.Count.ToString() + " sets");
+            Debug.Log("sfx count: " + n.ToString() + " sfx in " + jukebox.sfxSet.Count.ToString() + " sets | " + clips.Count.ToString() + " unique sfx");
         }
 
+        /// <summary>
+        /// add a new set to the jukebox, starting with and initially named after the specified audio clip
+        /// </summary>
+        /// <param name="a">audio clip to use to start set</param>
         void AddSet(AudioClip a)
         {
-            SfxJukebox soundmaster = target as SfxJukebox;
-            SfxSet set = new SfxSet(a.name, new AudioClip[] { a });
-            soundmaster.sfxSet.Add(set);
-            EditorUtility.SetDirty(soundmaster);
+            SfxJukebox jukebox = target as SfxJukebox;
+            SfxSet set = new(a.name, new AudioClip[] { a });
+            jukebox.sfxSet.Add(set);
+            EditorUtility.SetDirty(jukebox);
         }
     }
 }

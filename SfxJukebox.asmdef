@@ -1,6 +1,6 @@
 {
-    "name": "SfxJukebox",
-    "rootNamespace": "SfxJukebox",
+    "name": "SFXJukebox",
+    "rootNamespace": "SFXJukebox",
     "references": [],
     "includePlatforms": [],
     "excludePlatforms": [],

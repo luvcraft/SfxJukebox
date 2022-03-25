@@ -1,6 +1,6 @@
 using UnityEngine;
 
-namespace SfxJukebox
+namespace SFXJukebox
 {
 	/// <summary>
 	/// simple behavior for playing a single looping sound effect on a gameobject

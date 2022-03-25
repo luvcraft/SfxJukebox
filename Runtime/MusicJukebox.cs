@@ -1,6 +1,6 @@
 using UnityEngine;
 
-namespace SfxJukebox
+namespace SFXJukebox
 {
 	/// <summary>
 	/// behavior for a music jukebox to play music and fade to and from silence between tracks

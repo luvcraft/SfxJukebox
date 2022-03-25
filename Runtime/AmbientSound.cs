@@ -1,7 +1,7 @@
 ﻿using UnityEngine;
 using System.Collections.Generic;
 
-namespace SfxJukebox
+namespace SFXJukebox
 {
     /// <summary>
     /// simple behavior for intermittently playing a random sound effect from a set
