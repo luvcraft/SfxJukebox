@@ -6,6 +6,7 @@ namespace SfxJukebox
 	/// <summary>
 	/// behavior for playing random sfx from sets on specified targets
 	/// </summary>
+	[RequireComponent(typeof(AudioSource))]
 	public class SfxJukebox : MonoBehaviour
 	{
 		/// <summary>
@@ -22,7 +23,10 @@ namespace SfxJukebox
 		public bool isMaster = false;
 
 		[Tooltip("if true, will debug missing sfx")]
-		public bool complain = false;
+		public bool complain = true;
+
+		[Tooltip("log every time Play is called")]
+		public bool verbose = false;
 
 		[Tooltip("list of this sfx jukebox's sfx sets")]
 		public List<SfxSet> sfxSet;
@@ -82,7 +86,7 @@ namespace SfxJukebox
 			{
 				if(complain)
 				{
-					Debug.Log(name + " has a sfx jukebox with no sfx sets");
+					Debug.LogWarning(name + " has a sfx jukebox with no sfx sets");
 				}
 				return false;
 			}
@@ -151,15 +155,27 @@ namespace SfxJukebox
 		/// <param name="target">target to play sfx on. Defaults to this sfx jukebox</param>
 		public void Play(string set, GameObject target = null)
 		{
+			if(verbose)
+			{
+				if(target)
+				{
+					Debug.Log($"{name}: Play({set}, {target.name})");
+				}
+				else
+				{
+					Debug.Log($"{name}: Play({set}, null)");
+				}
+			}
+
 			if(!TryToPlay(set, target) && complain)
 			{
 				if(target)
 				{
-					Debug.Log("no sfx set found with name: " + set + " | called by " + PathInScene(target.transform));
+					Debug.LogWarning("no sfx set found with name: " + set + " | called by " + PathInScene(target.transform));
 				}
 				else
 				{
-					Debug.Log("no sfx set found with name: " + set);
+					Debug.LogWarning("no sfx set found with name: " + set);
 				}
 			}
 		}
