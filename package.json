@@ -4,6 +4,10 @@
   "version": "1.0.0",
   "description": "A simple sfx and music management system.",
   "type": "library",
+  "author": {
+    "name": "R Hunter Gough",
+    "url": "http://studiohunty.com/"
+  },
   "dependencies": {
   }
 }
