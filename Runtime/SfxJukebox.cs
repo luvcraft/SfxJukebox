@@ -31,6 +31,9 @@ namespace SFXJukebox
 		[Tooltip("list of this sfx jukebox's sfx sets")]
 		public List<SfxSet> sfxSet;
 
+		// stinger jukebox gets muted with music instead of sfx
+		internal bool isStingerJukebox = false;
+
 		// the last sfx set played
 		private string _lastSet = "";
 
@@ -77,7 +80,11 @@ namespace SFXJukebox
 		/// <returns>true if sfx played, false if there was a problem</returns>
 		private bool TryToPlay(string set, GameObject target = null)
 		{
-			if(sfxMuted)
+			if(!isStingerJukebox && sfxMuted)
+			{
+				return true;
+			}
+			else if(isStingerJukebox && MusicJukebox.musicMuted)
 			{
 				return true;
 			}
@@ -213,6 +220,15 @@ namespace SFXJukebox
 			}
 
 			return null;
+		}
+
+		/// <summary>
+		/// whether or not this jukebox is playing anything
+		/// </summary>
+		/// <returns>true if playing something, false otherwise. Doesn't work for "play all" sfx</returns>
+		public bool IsPlaying()
+		{
+			return _audio && _audio.isPlaying;
 		}
 
 		/// <summary>

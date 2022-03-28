@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using UnityEngine;
 
 namespace SFXJukebox
@@ -12,8 +13,11 @@ namespace SFXJukebox
 
 		public static bool musicMuted = false;
 
+		[Tooltip("sfx jukebox to use to play stingers")]
+		public SfxJukebox stingerJukebox;
+
 		[Tooltip("list of music audioclips")]
-		public AudioClip[] music;
+		public List<AudioClip> music;
 
 		[Tooltip("maximum volume to play music")]
 		public float maxVolume = 1;
@@ -24,11 +28,11 @@ namespace SFXJukebox
 		[Tooltip("if true, will debug missing music")]
 		public bool complain = false;
 
-		private float _targetVolume;
-		private float _lastVolume;
-		private float _volumeProgress;
+		private Stack<AudioClip> _musicStack = new Stack<AudioClip>();
 
-		private string _currentMusic;
+		private AudioClip _nextMusic => _musicStack.Count > 0 ? _musicStack.Peek() : null;
+
+		private float _targetVolume;
 
 		private AudioSource __audio;
 		private AudioSource _audio
@@ -50,12 +54,22 @@ namespace SFXJukebox
 				DontDestroyOnLoad(gameObject);
 				instance = this;
 				gameObject.name = "Music Jukebox";
-				_volumeProgress = 0;
+				if(stingerJukebox)
+				{
+					stingerJukebox.isStingerJukebox = true;
+				}
 				_audio.volume = 0;
-				_targetVolume = maxVolume;
+				_targetVolume = 0;
+				_audio.loop = true;
 				if(_audio.clip)
 				{
-					_currentMusic = _audio.clip.name;
+					_musicStack.Push(_audio.clip);
+					_audio.Play();
+					if(!music.Contains(_audio.clip))
+					{
+						music.Add(_audio.clip);
+					}
+
 				}
 			}
 			else
@@ -65,129 +79,200 @@ namespace SFXJukebox
 		}
 
 		/// <summary>
-		/// play the music with the specified name
+		/// plays the specified music clip
+		/// fades out current music, then fades in new music
 		/// </summary>
-		/// <param name="musicName">name of music to play</param>
-		private void PlayByName(string musicName)
+		/// <param name="music">music to play next</param>
+		/// <param name="popDown">if true and music is already in the stack, pop down to it. Otherwise push it to the stack even if it's already in the stack</param>
+		public static void PlayMusic(AudioClip music, bool popDown = true)
 		{
-			if(musicName == "")
+			if(!instance || instance._nextMusic == music)
 			{
 				return;
 			}
 
-			bool found = false;
-
-			for(int i = 0; i < music.Length; i++)
+			if(instance._musicStack.Contains(music) && popDown)
 			{
-				if(music[i] != null && music[i].name == musicName)
+				while(instance._nextMusic != music)
 				{
-					_audio.clip = music[i];
-					_audio.Play();
-					_targetVolume = maxVolume;
-					found = true;
-					_currentMusic = musicName;
-					break;
+					instance._musicStack.Pop();
 				}
-			}
-
-			if(!found && complain)
-			{
-				Debug.Log("no music clip found with name: " + musicName);
-			}
-		}
-
-		/// <summary>
-		/// fade out the current music
-		/// </summary>
-		/// <param name="duration">how long the music takes to fade out, defaults to last value used</param>
-		public void FadeOut(float duration = -1)
-		{
-			_targetVolume = 0;
-			_lastVolume = _audio.volume;
-
-			if(duration > -1)
-			{
-				fadeDuration = duration;
-			}
-		}
-
-		/// <summary>
-		/// set the volume of the music
-		/// </summary>
-		/// <param name="volume">volume to use</param>
-		public void SetVolume(float volume)
-		{
-			_volumeProgress = 1;
-			_targetVolume = volume;
-		}
-
-		/// <summary>
-		/// change from the current music to the specified music, fading the music in and out
-		/// </summary>
-		/// <param name="musicName">new music to change to</param>
-		/// <param name="duration">how long the music takes to fade in / out</param>
-		public void ChangeMusic(string musicName, float duration = -1)
-		{
-			if(_currentMusic == musicName)
-			{
-				_targetVolume = maxVolume;
-				_lastVolume = _audio.volume;
-				return;
-			}
-			else if(_targetVolume > 0)
-			{
-				_targetVolume = 0;
-				_lastVolume = _audio.volume;
-				_volumeProgress = 0;
-			}
-
-			_currentMusic = musicName;
-
-			if(duration >= 0)
-			{
-				fadeDuration = duration;
-			}
-		}
-
-		void Update()
-		{
-			if(musicMuted)
-			{
-				_audio.mute = true;
-				return;
 			}
 			else
 			{
-				_audio.mute = false;
+				instance._musicStack.Push(music);
 			}
 
-			if(_volumeProgress < 1)
+			if(music && !instance.music.Contains(music))
 			{
-				// if volume is changing, keep it changing
+				instance.music.Add(music);
+			}
+		}
 
-				if(fadeDuration > 0)
+		/// <summary>
+		/// plays the specified music name
+		/// </summary>
+		/// <param name="musicName">name of music to play</param>
+		/// <param name="popDown">if true and music is already in the stack, pop down to it. Otherwise push it to the stack even if it's already in the stack</param>
+		public static void PlayMusicByName(string musicName, bool popDown = true)
+		{
+			if(!instance)
+			{
+				return;
+			}
+			else if(instance._nextMusic && instance._nextMusic.name == musicName)
+			{
+				return;
+			}
+
+			if(string.IsNullOrEmpty(musicName))
+			{
+				return;
+			}
+
+			foreach(AudioClip clip in instance.music)
+			{
+				if(clip.name == musicName)
 				{
-					_volumeProgress += Time.deltaTime / fadeDuration;
+					PlayMusic(clip);
+					return;
+				}
+			}
+
+			if(instance.complain)
+			{
+				Debug.LogWarning("can't find music named: " + musicName);
+			}
+		}
+
+		/// <summary>
+		/// stop the specified music and return to the previous music
+		/// </summary>
+		/// <param name="music">music to stop</param>
+		/// <param name="onlyOnTop">only stop the music if it's at the top of the stack</param>
+		public static void StopMusic(AudioClip music, bool onlyOnTop = false)
+		{
+			if(!instance)
+			{
+				return;
+			}
+
+			if(onlyOnTop)
+			{
+				if(instance._nextMusic == music)
+				{
+					instance._musicStack.Pop();
+				}
+				return;
+			}
+
+			while(instance._musicStack.Contains(music))
+			{
+				instance._musicStack.Pop();
+			}
+		}
+
+		/// <summary>
+		/// stop the specified music and return to the previous music
+		/// </summary>
+		/// <param name="musicName">name of the music to stop</param>
+		/// <param name="onlyOnTop">only stop the music if it's at the top of the stack</param>
+		public static void StopMusicByName(string musicName, bool onlyOnTop = false)
+		{
+			if(!instance)
+			{
+				return;
+			}
+
+			if(string.IsNullOrEmpty(musicName))
+			{
+				return;
+			}
+
+			foreach(AudioClip clip in instance.music)
+			{
+				if(clip.name == musicName)
+				{
+					StopMusic(clip, onlyOnTop);
+					return;
+				}
+			}
+
+			if(instance.complain)
+			{
+				Debug.LogWarning("can't find music named: " + musicName);
+			}
+		}
+
+		/// <summary>
+		/// stop playing music and clear the music stack
+		/// </summary>
+		public static void StopAllMusic()
+		{
+			instance._musicStack.Clear();
+		}
+
+		public static void PlayStinger(string stingerName)
+		{
+			if(!instance)
+			{
+				return;
+			}
+			else if(!instance.stingerJukebox)
+			{
+				if(instance.complain)
+				{
+					Debug.LogWarning("PlayStinger() called on MusicJukebox with no stinger jukebox");
+				}
+				return;
+			}
+
+			instance.stingerJukebox.Play(stingerName);
+			instance._targetVolume = 0;
+		}
+
+		private void Update()
+		{
+			if(stingerJukebox && stingerJukebox.IsPlaying())
+			{
+				_targetVolume = 0;
+				_audio.volume = 0;
+				return;
+			}
+
+			if(_audio.clip == _nextMusic)
+			{
+				if(_targetVolume < maxVolume && _audio.clip)
+				{
+					_targetVolume += Time.deltaTime / fadeDuration;
+				}
+			}
+			else
+			{
+				if(_targetVolume > 0)
+				{
+					_targetVolume -= Time.deltaTime / fadeDuration;
 				}
 				else
 				{
-					_volumeProgress = 1;
+					_audio.clip = _nextMusic;
+					_audio.Play();
 				}
-
-				_audio.volume = Mathf.Lerp(_lastVolume, _targetVolume, _volumeProgress);
 			}
-			else
+
+			_audio.volume = musicMuted ? 0 : _targetVolume;
+		}
+
+		private void OnValidate()
+		{
+			if(stingerJukebox)
 			{
-				_audio.volume = _targetVolume;
-				if(_targetVolume == 0)
+				foreach(SfxSet set in stingerJukebox.sfxSet)
 				{
-					// if volume is faded all the way out, and the desired music is not what's being played,
-					// start fading in the desired music
-					if(!_audio.clip || _currentMusic != _audio.clip.name)
+					if(set.priority == SfxSet.PriorityEnum.PlayAll)
 					{
-						_volumeProgress = 0;
-						_lastVolume = 0;
-						PlayByName(_currentMusic);
+						Debug.LogWarning(set.name + " in stinger jukebox has PlayAll priority. Setting to StopPrevious instead");
+						set.priority = SfxSet.PriorityEnum.StopPrevious;
 					}
 				}
 			}

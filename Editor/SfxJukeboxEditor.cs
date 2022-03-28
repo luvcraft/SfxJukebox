@@ -14,21 +14,23 @@ namespace SFXJukebox
         {
             base.OnInspectorGUI();
             if(!Application.isPlaying)
-            {             
+            {
+                SfxJukebox jukebox = target as SfxJukebox;
+
                 AudioClip a = EditorGUILayout.ObjectField("Add", null, typeof(AudioClip), false) as AudioClip;
                 if(a)
                 {
-                    AddSet(a);
+                    AddSet(jukebox, a);
                 }
 
                 if(GUILayout.Button("Alphabetize"))
                 {
-                    Alphabetize();
+                    Alphabetize(jukebox);
                 }
 
                 if(GUILayout.Button("Count SFX"))
                 {
-                    CountSfx();
+                    CountSfx(jukebox);
                 }
             }
         }
@@ -36,18 +38,16 @@ namespace SFXJukebox
         /// <summary>
         /// alphabetize the sfx sets
         /// </summary>
-        void Alphabetize()
-        {
-            SfxJukebox jukebox = target as SfxJukebox;
+        void Alphabetize(SfxJukebox jukebox)
+        {            
             jukebox.sfxSet.Sort();
         }
 
         /// <summary>
         /// count the sfx in the sfx sets
         /// </summary>
-        void CountSfx()
+        void CountSfx(SfxJukebox jukebox)
         {
-            SfxJukebox jukebox = target as SfxJukebox;
             int n = 0;
             HashSet<AudioClip> clips = new HashSet<AudioClip>();
 
@@ -68,10 +68,10 @@ namespace SFXJukebox
         /// <summary>
         /// add a new set to the jukebox, starting with and initially named after the specified audio clip
         /// </summary>
+        /// <param name="jukebox">jukebox to add the set to</param>
         /// <param name="a">audio clip to use to start set</param>
-        void AddSet(AudioClip a)
+        void AddSet(SfxJukebox jukebox, AudioClip a)
         {
-            SfxJukebox jukebox = target as SfxJukebox;
             SfxSet set = new(a.name, new AudioClip[] { a });
             jukebox.sfxSet.Add(set);
             EditorUtility.SetDirty(jukebox);
