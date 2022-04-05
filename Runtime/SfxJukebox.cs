@@ -29,7 +29,7 @@ namespace SFXJukebox
 		public bool verbose = false;
 
 		[Tooltip("list of this sfx jukebox's sfx sets")]
-		public List<SfxSet> sfxSet;
+		public List<SfxSet> sfxSet = new List<SfxSet>();
 
 		// stinger jukebox gets muted with music instead of sfx
 		internal bool isStingerJukebox = false;
