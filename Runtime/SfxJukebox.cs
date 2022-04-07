@@ -77,8 +77,9 @@ namespace SFXJukebox
 		/// </summary>
 		/// <param name="set">sfx set to play from</param>
 		/// <param name="target">target to play the sfx on. Defaults to this sfx jukebox</param>
+		/// <param name="pitch">pitch at which to play the sfx</param>
 		/// <returns>true if sfx played, false if there was a problem</returns>
-		private bool TryToPlay(string set, GameObject target = null)
+		private bool TryToPlay(string set, GameObject target, float pitch)
 		{
 			if(!isStingerJukebox && sfxMuted)
 			{
@@ -115,6 +116,8 @@ namespace SFXJukebox
 				targetAudio.playOnAwake = false;
 				targetAudio.rolloffMode = AudioRolloffMode.Linear;
 			}
+
+			targetAudio.pitch = pitch;
 
 			bool found = false;
 
@@ -160,7 +163,8 @@ namespace SFXJukebox
 		/// </summary>
 		/// <param name="set">set to play sfx from</param>
 		/// <param name="target">target to play sfx on. Defaults to this sfx jukebox</param>
-		public void Play(string set, GameObject target = null)
+		/// <param name="pitch">pitch at which to play the sfx</param>
+		public void Play(string set, GameObject target = null, float pitch = 1)
 		{
 			if(verbose)
 			{
@@ -174,7 +178,7 @@ namespace SFXJukebox
 				}
 			}
 
-			if(!TryToPlay(set, target) && complain)
+			if(!TryToPlay(set, target, pitch) && complain)
 			{
 				if(target)
 				{
@@ -193,14 +197,15 @@ namespace SFXJukebox
 		/// </summary>
 		/// <param name="set">set to play sfx from</param>
 		/// <param name="target">target to play sfx on. Defaults to this sfx jukebox</param>
-		public void PlayOnce(string set, GameObject target = null)
+		/// <param name="pitch">pitch at which to play the sfx</param>
+		public void PlayOnce(string set, GameObject target = null, float pitch = 1)
 		{
 			float elapsedTime = Time.timeSinceLevelLoad - _lastTime;
 			if(_lastTime < 0 || _lastSet != set || elapsedTime > 0.1)
 			{
 				_lastSet = set;
 				_lastTime = Time.timeSinceLevelLoad;
-				Play(set, target);
+				Play(set, target, pitch);
 			}
 		}
 
