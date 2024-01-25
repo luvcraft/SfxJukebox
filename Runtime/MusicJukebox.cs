@@ -209,6 +209,11 @@ namespace SFXJukebox
 		/// </summary>
 		public static void StopAllMusic()
 		{
+			if(!instance)
+			{
+				return;
+			}
+
 			instance._musicStack.Clear();
 		}
 
